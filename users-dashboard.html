@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Home Services</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+        }
+
+        .table-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #ddd;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            color: #555;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .role-customer {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .role-provider {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .date-small {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .delete-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background: #ff3838;
+            transform: scale(1.05);
+        }
+
+        .delete-btn:active {
+            transform: scale(0.95);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .modal-message {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal-email {
+            color: #ff4757;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .modal-cancel {
+            background: #ddd;
+            color: #333;
+        }
+
+        .modal-cancel:hover {
+            background: #bbb;
+        }
+
+        .modal-delete {
+            background: #ff4757;
+            color: white;
+        }
+
+        .modal-delete:hover {
+            background: #ff3838;
+        }
+
+        .refresh-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #5568d3;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .table-section {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 600px;
+            }
+
+            .filter-buttons {
+                flex-wrap: wrap;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <h1>👥 User Management Dashboard</h1>
+                    <p>View all registered customers and service providers</p>
+                </div>
+                <button class="refresh-btn" onclick="loadUsers()">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="number" id="totalUsers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Customers</h3>
+                <div class="number" id="totalCustomers">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Providers</h3>
+                <div class="number" id="totalProviders">0</div>
+            </div>
+        </div>
+
+        <div id="errorMsg" class="error" style="display:none;"></div>
+
+        <div class="filter-section">
+            <div class="filter-buttons">
+                <button class="filter-btn active" onclick="filterUsers('all')">All Users</button>
+                <button class="filter-btn" onclick="filterUsers('customer')">Customers Only</button>
+                <button class="filter-btn" onclick="filterUsers('provider')">Providers Only</button>
+            </div>
+        </div>
+
+        <div class="table-section">
+            <div id="loading" class="loading">
+                Loading user data... ⏳
+            </div>
+            <div id="tableContainer" style="display:none;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Role</th>
+                            <th>Registered Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTable">
+                    </tbody>
+                </table>
+            </div>
+            <div id="noData" class="no-data" style="display:none;">
+                No users found
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Delete User?</div>
+            <div class="modal-message">
+                Are you sure you want to delete this user?<br>
+                <span class="modal-email" id="deleteUserEmail"></span><br><br>
+                <strong>⚠️ This action cannot be undone!</strong>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-cancel" onclick="closeDeleteModal()">Cancel</button>
+                <button class="modal-btn modal-delete" onclick="confirmDelete()">Delete User</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allUsers = [];
+        let currentFilter = 'all';
+        let userToDelete = null;
+
+        async function loadUsers() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('tableContainer').style.display = 'none';
+                document.getElementById('noData').style.display = 'none';
+                document.getElementById('errorMsg').style.display = 'none';
+
+                const response = await fetch('http://localhost:5000/api/auth/users/all');
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch users: ${response.status}`);
+                }
+
+                const data = await response.json();
+                allUsers = data.users || [];
+
+                updateStats();
+                filterUsers('all');
+                document.getElementById('loading').style.display = 'none';
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('errorMsg').style.display = 'block';
+                document.getElementById('errorMsg').innerText = '❌ Error: ' + error.message + 
+                    '\n\nMake sure your backend server is running on http://localhost:5000';
+            }
+        }
+
+        function updateStats() {
+            const total = allUsers.length;
+            const customers = allUsers.filter(u => u.role === 'customer').length;
+            const providers = allUsers.filter(u => u.role === 'provider').length;
+
+            document.getElementById('totalUsers').innerText = total;
+            document.getElementById('totalCustomers').innerText = customers;
+            document.getElementById('totalProviders').innerText = providers;
+        }
+
+        function filterUsers(role) {
+            currentFilter = role;
+            
+            // Update active button
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Only update button if called from click event
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // If called programmatically, find and activate the correct button
+                const buttons = document.querySelectorAll('.filter-btn');
+                if (role === 'all') {
+                    buttons[0].classList.add('active');
+                } else if (role === 'customer') {
+                    buttons[1].classList.add('active');
+                } else if (role === 'provider') {
+                    buttons[2].classList.add('active');
+                }
+            }
+
+            // Filter data
+            const filtered = role === 'all' 
+                ? allUsers 
+                : allUsers.filter(u => u.role === role);
+
+            displayUsers(filtered);
+        }
+
+        function displayUsers(users) {
+            const tableBody = document.getElementById('userTable');
+            
+            if (users.length === 0) {
+                document.getElementById('tableContainer').style.display = 'none';
+                document.getElementById('noData').style.display = 'block';
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            users.forEach((user, index) => {
+                const row = document.createElement('tr');
+                const createdDate = new Date(user.createdAt);
+                const formattedDate = createdDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const roleClass = user.role === 'customer' ? 'role-customer' : 'role-provider';
+                const roleText = user.role === 'customer' ? '👤 Customer' : '🔧 Provider';
+
+                row.innerHTML = `
+                    <td style="color: #999; font-weight: 500;">${index + 1}</td>
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.email}</td>
+                    <td>${user.phone}</td>
+                    <td>${user.address}</td>
+                    <td><span class="role-badge ${roleClass}">${roleText}</span></td>
+                    <td><span class="date-small">${formattedDate}</span></td>
+                    <td>
+                        <button class="delete-btn" onclick="openDeleteModal('${user._id}', '${user.email}', '${user.name}')">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById('tableContainer').style.display = 'block';
+            document.getElementById('noData').style.display = 'none';
+        }
+
+        function openDeleteModal(userId, email, name) {
+            userToDelete = { id: userId, email: email, name: name };
+            document.getElementById('deleteUserEmail').innerText = `${name} (${email})`;
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            userToDelete = null;
+        }
+
+        async function confirmDelete() {
+            if (!userToDelete) return;
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/auth/users/${userToDelete.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to delete user: ${response.status}`);
+                }
+
+                closeDeleteModal();
+                
+                // Reload the user list
+                await loadUsers();
+                
+                // Show success message
+                document.getElementById('errorMsg').style.display = 'block';
+                document.getElementById('errorMsg').innerText = `✅ User ${userToDelete.email} deleted successfully!`;
+                document.getElementById('errorMsg').style.background = '#e8f5e9';
+                document.getElementById('errorMsg').style.color = '#2e7d32';
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('errorMsg').style.display = 'block';
+                document.getElementById('errorMsg').innerText = '❌ Error: ' + error.message;
+                closeDeleteModal();
+            }
+        }
+
+        // Close modal when clicking outside it
+        window.onclick = function(event) {
+            const deleteModal = document.getElementById('deleteModal');
+            if (event.target === deleteModal) {
+                closeDeleteModal();
+            }
+        }
+
+        // Load users when page loads
+        window.onload = loadUsers;
+    </script>
+</body>
+</html>
