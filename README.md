@@ -29,11 +29,11 @@
 ---
 
 ## 📂 Repository Structure
-
+```text
 OneTapService/
 ├── BE Onetap Services/    # Backend server API and database logic
 └── FE Onetap Services/    # Flutter mobile application codebase
-
+```
 🚀 Getting Started
 Follow these steps to set up and run the project locally.
 
